@@ -56,6 +56,7 @@ class Story extends StatefulWidget {
     this.startAt = 0,
     this.topOffset,
     this.fullscreen = true,
+    this.onSwipeUp,
   })  : assert(momentCount > 0),
         assert(momentSwitcherFraction >= 0),
         assert(momentSwitcherFraction < double.infinity),
@@ -129,6 +130,11 @@ class Story extends StatefulWidget {
   ///
   final bool fullscreen;
 
+  ///
+  /// Callback called on swipe up
+  ///
+  final VoidCallback? onSwipeUp;
+
   static Widget instagramProgressSegmentBuilder(
           BuildContext context, int index, double progress, double gap) =>
       Container(
@@ -155,6 +161,7 @@ class _StoryState extends State<Story> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late int _currentIdx;
   bool _isInFullscreenMode = false;
+  bool _callSwipeUp = false;
 
   void _switchToNextOrFinish() {
     _controller.stop();
@@ -204,6 +211,25 @@ class _StoryState extends State<Story> with SingleTickerProviderStateMixin {
   void _onLongPressEnd() {
     setState(() => _isInFullscreenMode = false);
     _controller.forward();
+  }
+
+  void _onPandUpdate(DragUpdateDetails details) {
+    int sensitivity = 8;
+    if (!_callSwipeUp && widget.onSwipeUp != null) {
+      setState(() {
+        _callSwipeUp = true;
+      });
+    }
+  }
+
+  void _onPanEnded(DragEndDetails details) {
+    if (_callSwipeUp) {
+      widget.onSwipeUp!();
+
+      setState(() {
+        _callSwipeUp = false;
+      });
+    }
   }
 
   Future<void> _hideStatusBar() =>
@@ -314,6 +340,8 @@ class _StoryState extends State<Story> with SingleTickerProviderStateMixin {
             onTapUp: _onTapUp,
             onLongPress: _onLongPress,
             onLongPressUp: _onLongPressEnd,
+            onPanUpdate: _onPandUpdate,
+            onPanEnd: _onPanEnded,
           ),
         ),
       ],
