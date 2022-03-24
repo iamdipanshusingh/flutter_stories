@@ -133,7 +133,7 @@ class Story extends StatefulWidget {
   ///
   /// Callback called on swipe up
   ///
-  final VoidCallback? onSwipeUp;
+  final Function(int)? onSwipeUp;
 
   static Widget instagramProgressSegmentBuilder(
           BuildContext context, int index, double progress, double gap) =>
@@ -224,7 +224,7 @@ class _StoryState extends State<Story> with SingleTickerProviderStateMixin {
 
   void _onPanEnded(DragEndDetails details) {
     if (_callSwipeUp) {
-      widget.onSwipeUp!();
+      widget.onSwipeUp!(_currentIdx);
 
       setState(() {
         _callSwipeUp = false;
